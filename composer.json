@@ -1,0 +1,14 @@
+{
+    "name": "jrast/silverstripe-vcard",
+    "description": "Import and Export vCards with Silverstripe",
+    "authors": [
+        {
+            "name": "Juerg Rast",
+            "email": "juergr@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+
+    }
+}
