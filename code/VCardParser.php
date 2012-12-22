@@ -2,7 +2,7 @@
 
 namespace jrast\vcard;
 
-class vCardParser extends \Object implements \Countable, \IteratorAggregate  {
+class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
     protected $filename;
     protected $rawData;
     protected $fileHandle;
@@ -54,7 +54,7 @@ class vCardParser extends \Object implements \Countable, \IteratorAggregate  {
         $this->cards = array();
         $this->currentCard = 0;
         foreach($splitedCards as $card) {
-            $this->cards[] = new vCard($card);
+            $this->cards[] = new VCard($card);
         }
     }
 

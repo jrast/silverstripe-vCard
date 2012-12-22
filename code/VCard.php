@@ -2,7 +2,7 @@
 
 namespace jrast\vcard;
 
-class vCard extends \ViewableData {
+class VCard extends \ViewableData {
     protected $rawData = null;
 
 
@@ -48,8 +48,7 @@ class vCard extends \ViewableData {
             if(strpos($line, ':') === false)
                 continue;
             
-            $this->data->add(vCardProperty::create()->setRawData($line));
+            $this->data->add(VCardProperty::create()->setRawData($line));
         }
-        \Debug::dump($this->data);
     }
 }

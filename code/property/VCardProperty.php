@@ -3,7 +3,11 @@
 namespace jrast\vcard;
 
 
-class vCardProperty extends \ViewableData {
+class VCardProperty extends \ViewableData {
+    
+    static protected $allowed_parameters = array(
+        'encoding', 'charset', 'language', 'value'
+    );
 
     protected $rawData = null;
     protected $group = null;
@@ -22,6 +26,10 @@ class vCardProperty extends \ViewableData {
             $this->setAttributes($attributes);
 
         parent::__construct();
+    }
+    
+    public function getAllowedAttributes() {
+        return \Config::inst()->get($this->class, 'allowed_parameters');
     }
 
     public function setRawData($data) {
@@ -56,7 +64,7 @@ class vCardProperty extends \ViewableData {
         // If the property is AGENT, assign the value to a new vCard and return
         if ((strpos($key, 'agent') === 0) && (stripos($value, 'begin:vcard') !== false)) {
             $this->key = $key;
-            $this->value = new vCard(str_replace('-wrap-', "\n", $value));
+            $this->value = new VCard(str_replace('-wrap-', "\n", $value));
             return;            
         }       
         
