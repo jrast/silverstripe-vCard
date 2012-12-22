@@ -6,6 +6,8 @@ ORG:Bubba Gump Shrimp Co.
 TITLE:Shrimp Man
 TEL;WORK;VOICE:(111) 555-1212
 TEL;HOME;VOICE:(404) 555-1212
+A.TEL;HOME:+1-213-555-1234
+A.NOTE:This is my vacation home.
 ADR;WORK:;;100 Waters Edge;Baytown;LA;30314;United States of America
 LABEL;WORK;ENCODING=QUOTED-PRINTABLE:100 Waters Edge=0D=0ABaytown, LA 30314=0D=0AUnited States of America
 ADR;HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America

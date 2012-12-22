@@ -6,6 +6,7 @@ namespace jrast\vcard;
 class vCardProperty extends \ViewableData {
 
     protected $rawData = null;
+    protected $group = null;
     protected $key = null;
     protected $value = null;
     protected $attributes = array();
@@ -71,8 +72,9 @@ class vCardProperty extends \ViewableData {
         $keyParts = explode(';', $key);
         $key = $keyParts[0];
         
-        if(strpos($key, 'item') === 0) {
+        if(strpos($key, '.') !== false) {
             $tmpKey = explode('.', $key, 2);
+            $this->group = $tmpKey[0];
             $key = $tmpKey[1];
         }
         $this->key = $key;
