@@ -37,6 +37,7 @@ class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
         if(!is_readable($this->filename)) {
             throw new Exception('VCardParser: Filepath is not accessible (' .$this->filename. ')');
         }
+        
         $this->rawData = file_get_contents($this->filename);
         
         $matches = array(); // Used for PHP < 5.4
@@ -56,6 +57,8 @@ class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
         foreach($splitedCards as $card) {
             $this->cards[] = new VCard($card);
         }
+        // the Raw data is no longer needed as we pass all information to the VCard Objects:
+        $this->rawData = null;
     }
 
     public function count() {

@@ -23,6 +23,8 @@ class VCard extends \ViewableData {
         $this->rawData = $data;
         $this->prepareRawData();
         $this->extractData();
+        // We don't need the raw data anymore
+        $this->rawData = null;
     }
     
     private function prepareRawData() {
