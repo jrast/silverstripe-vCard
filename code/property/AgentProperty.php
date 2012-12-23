@@ -17,6 +17,16 @@ namespace jrast\vcard;
  * 
  */
 class AgentProperty extends VCardProperty {
+    
+    public function setRawValue($data) {
+        $data = str_replace('-wrap-', "\n", $data);
+        if(strpos($data, "BEGIN:VCARD") === 0) {
+            $this->value = new VCard($data);
+        } else {
+            parent::setRawValue($data);
+        }
+        return $this;
+    }
 }
 
 ?>

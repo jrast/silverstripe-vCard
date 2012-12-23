@@ -10,8 +10,8 @@ namespace jrast\vcard;
  *   TEL;WORK;HOME;VOICE;FAX:+1-800-555-1234
  * 
  */
-class TelProperty {
-    protected static $allowed_parameters = array('type');
+class TelProperty extends VCardProperty {
+    protected static $allowed_attributes = array('type');
 }
 
 ?>

@@ -9,5 +9,5 @@ namespace jrast\vcard;
  *   ADR;DOM;HOME:P.O. Box 101;Suite 101;123 Main Street;Any Town;CA;91921-1234;
  */
 class AdrProperty extends VCardProperty {
-    protected static $allowed_parameters = array('type');
+    protected static $allowed_attributes = array('type');
 }

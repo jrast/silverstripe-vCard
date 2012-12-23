@@ -8,7 +8,7 @@ namespace jrast\vcard;
  * Examples:
  *   UID:19950401-080045-40000F192713-0052
  */
-class UidProperty {
+class UidProperty extends VCardProperty {
     //put your code here
 }
 

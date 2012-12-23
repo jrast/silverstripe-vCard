@@ -7,7 +7,7 @@ namespace jrast\vcard;
  * the vCard.
  */
 class LabelProperty extends VCardProperty {
-    protected static $allowed_parameters = array('type');
+    protected static $allowed_attributes = array('type');
 }
 
 ?>

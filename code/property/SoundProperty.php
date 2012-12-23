@@ -9,7 +9,7 @@ namespace jrast\vcard;
  *   
  */
 class SoundProperty extends VCardProperty {
-    protected static $allowed_parameters = array('type');
+    protected static $allowed_attributes = array('type');
 }
 
 ?>

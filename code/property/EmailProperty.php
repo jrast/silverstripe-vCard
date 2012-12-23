@@ -9,7 +9,7 @@ namespace jrast\vcard;
  *   EMAIL;INTERNET:john.public@abc.com
  */
 class EmailProperty extends VCardProperty {
-    protected static $allowed_parameters = array('type');
+    protected static $allowed_attributes = array('type');
 }
 
 ?>

@@ -50,7 +50,7 @@ class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
         $this->rawData = str_replace("\r", "\n", $this->rawData);
 		$this->rawData = preg_replace('{(\n+)}', "\n", $this->rawData);
         
-        $splitedCards = preg_split('/(BEGIN:VCARD.+?END:VCARD)\n/s', $this->rawData, -1, PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE);
+        $splitedCards = preg_split('/(BEGIN:VCARD.+?\nEND:VCARD)\n/s', $this->rawData, -1, PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE);
         $this->cards = array();
         $this->currentCard = 0;
         foreach($splitedCards as $card) {

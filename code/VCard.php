@@ -40,15 +40,16 @@ class VCard extends \ViewableData {
 		$this->rawData = str_replace("-base64=-\n", "=\n", $this->rawData);
     }
     
+    
     private function extractData() {
         $lines = explode("\n", $this->rawData);
-        $this->data = new \ArrayList();
+        $this->data = array();        
         foreach($lines as $line) {
-            // Lines without a colon contains no value
-            if(strpos($line, ':') === false)
-                continue;
-            
-            $this->data->add(VCardProperty::create()->setRawData($line));
+            $property = VCardProperty::create_from_raw_data($line);
+            $this->data[] = $property;         
         }
+        
+        \Debug::dump($this->data);
     }
+    
 }
