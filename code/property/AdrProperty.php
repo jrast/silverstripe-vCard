@@ -10,4 +10,8 @@ namespace jrast\vcard;
  */
 class AdrProperty extends VCardProperty {
     protected static $allowed_attributes = array('type');
+    
+    protected static $allowed_attribute_values = array(
+        'type'  => array('dom', 'intl', 'postal', 'parcel', 'home', 'work')
+    );
 }

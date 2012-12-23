@@ -2,6 +2,8 @@
 
 namespace jrast\vcard;
 
+use \Exception;
+
 
 class VCardProperty extends \ViewableData {
     /**
@@ -15,6 +17,14 @@ class VCardProperty extends \ViewableData {
         'encoding', 'charset', 'language', 'value'
     );
     
+    static protected $allowed_attribute_values = array(
+        'encoding'  => array('base64', 'quoted-printable', '8bit'),
+        'charset'   => array('any'),
+        'language'  => array('any'),
+        'value'     => array('inline', 'cid', 'content-id', 'url', 'uri')
+    );
+
+
     /**
      * With this Regex, a single line of a vCard can be split into the
      * different parts. the group and the key is extracted and ready for use,
@@ -26,7 +36,7 @@ class VCardProperty extends \ViewableData {
               (?: (?P<group>[a-z0-9]+?)\.)? # The line can start with a group name which is seperated with a dot from the key name
                 (?P<key> [a-z0-9-]+?)       # Then, the key follows
               (?: ;                         # If there is a ; after the key,
-                (?P<attrib> [a-z0-9,=;]+?)  # there are Attributes
+                (?P<attrib> [a-z0-9-,=;]+?)  # there are Attributes
               )?                            
               :                             # then we get to the seperator between the keypart and value
               (?P<value>.*)                 # we capture the value;
@@ -48,31 +58,122 @@ class VCardProperty extends \ViewableData {
         parent::__construct();
     }
     
+    /**
+     * 
+     * @return array - all allowed attribute keys for this property
+     * @see VCardProperty::$allowed_attributes
+     */
     public function getAllowedAttributes() {
-        return \Config::inst()->get($this->class, 'allowed_attributess');
+        return \Config::inst()->get($this->class, 'allowed_attributes');
+    }
+    
+    public function getAllowedAttributeValues() {
+        return \Config::inst()->get($this->class, 'allowed_attribute_values');
     }
 
+    /**
+     * Set some raw data for this vCard. The data is not processed at all.
+     * @param string $data
+     * @return \jrast\vcard\VCardProperty
+     */
     public function setRawData($data) {
         $this->rawData = $data;
         return $this;
     }
     
+    /**
+     * Set the attributes as string.
+     * The attributes are paresed and saved to the attributes arrays
+     * 
+     * @param string $attributes
+     * @see VCardProperty::$attributes
+     * @return \jrast\vcard\VCardProperty
+     */
     public function setRawAttributes($attributes) {
-        $this->setAttributes($attributes);
+        $regex_attributes = "/(?P<key>[a-z0-9-]+)=?(?P<value> [a-z0-9-]+)?,?/ix";
+        $attrib = array();
+        if($attributes != '') {
+            $parts = array();
+            $result = preg_match_all($regex_attributes, $attributes, $parts);
+            if(!$result) {
+                $this->attributes = $attrib;
+                return;
+            }
+            $keys = $parts['key'];
+            $values = $parts['value'];
+            $allowed_keys = $this->getAllowedAttributes();
+            $allowed_values = $this->getAllowedAttributeValues();
+            foreach ($keys as $index => $key) {
+                $key = strtolower($key);
+                // The key is in the allowed_keys array
+                if(in_array($key, $allowed_keys)) {
+                    $value = strtolower($values[$index]);
+                    if(array_key_exists($key, $allowed_values)) {
+                        // For this key exists a allowed values array
+                        if(in_array($value, $allowed_values[$key])) {
+                            // Otherwise we check if the value is in the array
+                            $attrib[$key][] = $value;   
+                        } else {
+                            // OK, we found a key wich is not allowed
+                            $allowedValues = implode(', ', $allowed_values[$key]);
+                            throw new Exception("$this->class: '$value' not allowed for attribute '$key'! Allowed values are: $allowedValues");
+                        }                        
+                    } else {
+                        // For this key, no array with allowed values exist. we just save the key and asume any value is allowed
+                        $attrib[$key][] = $value;
+                        throw new Exception("$this->class: '$value' not allowed for attribute '$key'! Allowed values are: $allowedValues");
+                    }
+                } else {
+                    $keyIsAllowed = false;
+                    foreach($allowed_values as $otherKey => $otherValues) {
+                        if(in_array($key, $otherValues)) {
+                            $attrib[$otherKey][] = $key;
+                            $keyIsAllowed = true;
+                        }
+                    }
+                    if(!$keyIsAllowed) {
+                        throw new Exception(sprintf("%s: '%s' not allowed as attribute!", $this->class, $key));
+                    }
+                }
+            }
+        }
+        $this->setAttributes($attrib);
         return $this;
     }
     
+    /**
+     * Set the raw value
+     * @param string $value
+     * @return \jrast\vcard\VCardProperty
+     */
     public function setRawValue($value) {
         $this->setValue($value);
         return $this;
     }
     
+    /**
+     * Set a group for the this property. make sure the group has a valid name!
+     * @param type $group
+     * @return \jrast\vcard\VCardProperty
+     */
     public function setGroup($group) {
         $this->group = $group;
         return $this;
     }
 
-    public function setKey($key) {    
+    /**
+     * Set the key for this property.
+     * @param type $key
+     * @throws \Exception
+     * @return \jrast\vcard\VCardProperty
+     */
+    public function setKey($key) {
+        $class = get_called_class();
+        if($class != __CLASS__) {
+            if(self::get_classname_from_key($key) != $class) {
+                throw new Exception("VCardProperty: You can't set the key to '$key' on $class. Use a VCardProperty instead");
+            }
+        }
         $this->key = $key;
         return $this;
     }
@@ -80,10 +181,6 @@ class VCardProperty extends \ViewableData {
     public function setValue($value) {
         $this->value = $value;
         return $this;
-    }
-    
-    public function getValue() {
-        return $this->value;
     }
 
     public function setAttributes($attributes) {
@@ -120,7 +217,7 @@ class VCardProperty extends \ViewableData {
          $parts = array();            
          $result = preg_match(self::$property_regex, $data, $parts);
          if($result != 1) {
-            throw new \Exception("VCard: Line does not match vCard-property pattern: $data");
+            throw new Exception("VCard: Line does not match vCard-property pattern: $data");
          }
          $key = $parts['key'];
          $class = self::get_classname_from_key($key);

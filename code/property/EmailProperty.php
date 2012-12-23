@@ -10,6 +10,10 @@ namespace jrast\vcard;
  */
 class EmailProperty extends VCardProperty {
     protected static $allowed_attributes = array('type');
+    
+    static protected $allowed_attribute_values = array(
+        'type'  => array('pref', 'home', 'work', 'internet')
+    );
 }
 
 ?>

@@ -49,7 +49,7 @@ class VCard extends \ViewableData {
             $this->data[] = $property;         
         }
         
-        \Debug::dump($this->data);
+        //\Debug::dump($this->data);
     }
     
 }

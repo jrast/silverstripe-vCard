@@ -12,6 +12,10 @@ namespace jrast\vcard;
  */
 class TelProperty extends VCardProperty {
     protected static $allowed_attributes = array('type');
+    
+    protected static $allowed_attribute_values = array(
+        'type'  => array('pref', 'work', 'home', 'voice', 'fax', 'msg', 'cell', 'pager', 'bbs', 'modem', 'car', 'isdn', 'video')
+    );
 }
 
 ?>
