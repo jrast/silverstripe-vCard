@@ -2,7 +2,12 @@
 
 namespace jrast\vcard;
 
-class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
+use \ViewableData;
+use \Countable;
+use \IteratorAggregate;
+use \ArrayIterator;
+
+class VCardParser extends ViewableData implements Countable, IteratorAggregate  {
     protected $filename;
     protected $rawData;
     protected $fileHandle;
@@ -66,6 +71,6 @@ class VCardParser extends \Object implements \Countable, \IteratorAggregate  {
     }
 
     public function getIterator() {
-        return new \ArrayIterator($this->cards);
+        return new ArrayIterator($this->cards);
     }
 }

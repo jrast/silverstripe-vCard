@@ -2,7 +2,9 @@
 
 namespace jrast\vcard;
 
-class VCard extends \ViewableData {
+use \ViewableData;
+
+class VCard extends ViewableData {
     protected $rawData = null;
 
 

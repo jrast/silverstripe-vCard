@@ -3,9 +3,11 @@
 namespace jrast\vcard;
 
 use \Exception;
+use \Config;
+use \ViewableData;
 
 
-class VCardProperty extends \ViewableData {
+class VCardProperty extends ViewableData {
     /**
      * These attributes are allowed for all properties
      * Override this field in child classes which have more allowed parameters
@@ -43,14 +45,16 @@ class VCardProperty extends \ViewableData {
             $~ix";
 
     protected $rawData = null;
-    protected $group = null;
-    protected $key = null;
-    protected $value = null;
-    protected $attributes = array();
+    public $Group = null;
+    public $Key = null;
+    public $Value = null;
+    public $Attributes = array();
 
+    
     function __construct($key = null, $value = null, $attributes = null) {
-        if ($key)
+        if ($key) {
             $this->setKey($key);
+        }
         if ($value)
             $this->setValue($value);
         if ($attributes)
@@ -64,11 +68,11 @@ class VCardProperty extends \ViewableData {
      * @see VCardProperty::$allowed_attributes
      */
     public function getAllowedAttributes() {
-        return \Config::inst()->get($this->class, 'allowed_attributes');
+        return Config::inst()->get($this->class, 'allowed_attributes');
     }
     
     public function getAllowedAttributeValues() {
-        return \Config::inst()->get($this->class, 'allowed_attribute_values');
+        return Config::inst()->get($this->class, 'allowed_attribute_values');
     }
 
     /**
@@ -151,15 +155,6 @@ class VCardProperty extends \ViewableData {
         return $this;
     }
     
-    /**
-     * Set a group for the this property. make sure the group has a valid name!
-     * @param type $group
-     * @return \jrast\vcard\VCardProperty
-     */
-    public function setGroup($group) {
-        $this->group = $group;
-        return $this;
-    }
 
     /**
      * Set the key for this property.
@@ -168,13 +163,23 @@ class VCardProperty extends \ViewableData {
      * @return \jrast\vcard\VCardProperty
      */
     public function setKey($key) {
+        $key = strtolower($key);
         $class = get_called_class();
         if($class != __CLASS__) {
+            // We cant change the key if we are on a specific property class!
             if(self::get_classname_from_key($key) != $class) {
                 throw new Exception("VCardProperty: You can't set the key to '$key' on $class. Use a VCardProperty instead");
             }
+        } else {
+            // If there exists a special class for this key, we create this new class
+            $newClass = self::get_classname_from_key($key);
+            if(class_exists($newClass)) {
+                return $newClass::create()->setKey($key)
+                        ->setAttributes($this->attributes)
+                        ->setValue($this->value);
+            }            
         }
-        $this->key = $key;
+        $this->Key = $key;
         return $this;
     }
 
@@ -187,27 +192,11 @@ class VCardProperty extends \ViewableData {
         $this->attributes = $attributes;
         return $this;
     }
-
-/*
- * This are some old functions wich are no longer needed.
- * 
-
-
-    private function unescape($text) {
-        return str_replace(array('\:', '\;', '\,', "\n"), array(':', ';', ',', ''), $text);
-    }
-    
-    
-    private function parseValue($value) {
-        $value = trim($this->unescape(str_replace('-wrap-', '', $value)));
-        $this->value = $value;
-    } 
- */
     
     
     /**
      * Creates a new VCardProperty-Object (or the correct Subclass according to
-     * the key) for a single line in a vCard.s
+     * the key) for a single line in a vCard.
      * 
      * @param string $data
      * @return VCardProperty a VCardProperty or a Subclass of VCardPropertys
@@ -227,8 +216,8 @@ class VCardProperty extends \ViewableData {
              $property = VCardProperty::create();
          }
          $property->setRawData($data);
-         $property->setGroup($parts['group']);
-         $property->setKey($parts['key']);
+         $property->Group = $parts['group'];
+         $property->Key = strtolower($parts['key']);
          $property->setRawAttributes($parts['attrib']);
          $property->setRawValue($parts['value']);
          return $property;   
@@ -243,4 +232,5 @@ class VCardProperty extends \ViewableData {
     protected static function get_classname_from_key($key) {
         return __NAMESPACE__ . '\\' . ucfirst(strtolower($key)) . 'Property';
     }
+
 }
