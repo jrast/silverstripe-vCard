@@ -45,20 +45,23 @@ class VCardProperty extends ViewableData {
             $~ix";
 
     protected $rawData = null;
-    public $Group = null;
-    public $Key = null;
-    public $Value = null;
-    public $Attributes = array();
+    protected $group = null;
+    protected $key = null;
+    protected $value = null;
+    protected $attributes = array();
 
     
     function __construct($key = null, $value = null, $attributes = null) {
         if ($key) {
-            $this->setKey($key);
+            $this->key = $key;
+        } else {
+            $class = get_called_class();
+            $this->key = self::get_key_from_classname($class);
         }
         if ($value)
-            $this->setValue($value);
+            $this->value = $value;
         if ($attributes)
-            $this->setAttributes($attributes);
+            $this->attributes = $attributes;
         parent::__construct();
     }
     
@@ -85,6 +88,11 @@ class VCardProperty extends ViewableData {
         return $this;
     }
     
+    public function getRawData() {
+        return $this->rawData;
+    }
+
+
     /**
      * Set the attributes as string.
      * The attributes are paresed and saved to the attributes arrays
@@ -141,17 +149,7 @@ class VCardProperty extends ViewableData {
                 }
             }
         }
-        $this->setAttributes($attrib);
-        return $this;
-    }
-    
-    /**
-     * Set the raw value
-     * @param string $value
-     * @return \jrast\vcard\VCardProperty
-     */
-    public function setRawValue($value) {
-        $this->setValue($value);
+        $this->attributes = $attrib;
         return $this;
     }
     
@@ -179,13 +177,31 @@ class VCardProperty extends ViewableData {
                         ->setValue($this->value);
             }            
         }
-        $this->Key = $key;
+        $this->key = $key;
         return $this;
+    }
+    
+    public function getKey() {
+        return $this->key;
+    }
+
+
+    public function setGroup($group) {
+        $this->group = $group;
+        return $this;
+    }
+    
+    public function getGroup() {
+        return $this->group;
     }
 
     public function setValue($value) {
         $this->value = $value;
         return $this;
+    }
+    
+    public function getValue() {
+        return $this->value;
     }
 
     public function setAttributes($attributes) {
@@ -193,7 +209,13 @@ class VCardProperty extends ViewableData {
         return $this;
     }
     
-    
+    public function getAttributes() {
+        return $this->attributes;
+    }
+
+
+
+
     /**
      * Creates a new VCardProperty-Object (or the correct Subclass according to
      * the key) for a single line in a vCard.
@@ -215,11 +237,11 @@ class VCardProperty extends ViewableData {
          } else {
              $property = VCardProperty::create();
          }
-         $property->setRawData($data);
+         $property->RawData = $data;
          $property->Group = $parts['group'];
          $property->Key = strtolower($parts['key']);
-         $property->setRawAttributes($parts['attrib']);
-         $property->setRawValue($parts['value']);
+         $property->RawAttributes = $parts['attrib'];
+         $property->RawValue = $parts['value'];
          return $property;   
     }
     
@@ -232,5 +254,21 @@ class VCardProperty extends ViewableData {
     protected static function get_classname_from_key($key) {
         return __NAMESPACE__ . '\\' . ucfirst(strtolower($key)) . 'Property';
     }
+    
+    /**
+     * 
+     * @param string $class
+     * @return null|string
+     */
+    protected static function get_key_from_classname($class) {
+        $parts = explode('\\', $class);
+        $class = end($parts);
+        $key = str_replace('Property', '', $class);
+        if($key != 'VCard'){
+            return strtolower($key);
+        } else {
+            return null;
+        }
+    } 
 
 }
