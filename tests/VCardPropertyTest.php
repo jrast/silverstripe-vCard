@@ -4,6 +4,7 @@ namespace jrast\vcard\test;
 
 use jrast\vcard;
 use \SapphireTest;
+use \Exception;
 
 class VCardPropertyTest extends SapphireTest {
     protected $testValues = array(
@@ -60,6 +61,15 @@ class VCardPropertyTest extends SapphireTest {
                 'attributes'    => array(
                         'value'     => array('url'),
                         'type'      => array('gif'))
+            ),
+            array(
+                'raw'           => "N;LANGUAGE=DE-DE:Gump;Forrest",
+                'class'         => 'NProperty',
+                'key'           => 'n',
+                'group'         => null,
+                'attributes'    => array(
+                        'language'  => array('de-de')
+                )
             )
         );
     
@@ -87,13 +97,13 @@ class VCardPropertyTest extends SapphireTest {
    
     public function testCreateFromInvalidRawData() {
         $invalidRawData = array(
-            // Missing :
+            // Missing ":"
             'ORG Bubba Gump Shrimp Co.',
         );
         foreach($invalidRawData as $data) {
             try {
                 vcard\VCardProperty::create_from_raw_data($data);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 continue;
             }
             $this->fail('An expected exception has not been raised.');
@@ -103,9 +113,13 @@ class VCardPropertyTest extends SapphireTest {
     }
     
     
+    /**
+     * Test the different cases of how invalid attribute strings are handled.
+     */
     public function testSetInvalidRawAttributes() {
         $values = array(
-            array('not_allowed_attribute' => "this_should_raise_an_exception")
+            array('not_allowed_attribute'   => "this_should_raise_an_exception"),
+            array('not_allowed_value'       => "VALUE=something")
         );
         
         foreach($values as $value) {
@@ -113,25 +127,35 @@ class VCardPropertyTest extends SapphireTest {
             $expected = key($value);
             $attributes = $value[$expected];
             $property = vcard\VCardProperty::create();
-            if($expected == 'not_allowed_attribute') {
-                try {
-                    $property->setRawAttributes($attributes);
-                } catch (\Exception $e) {
-                    continue;
-                }
-                $this->fail('An Exception should have been thrown!');
-            } else {
-                $this->markTestIncomplete("The handling for this exepted value ($expected) is not implemented");
-            }
-            
+            switch ($expected) {
+                case 'not_allowed_attribute':
+                    try {
+                       $property->setRawAttributes($attributes); 
+                    } catch (Exception $e) {
+                        break;
+                    }
+                    $this->fail('An Exception should have been thrown!');
+                    break;
+                case 'not_allowed_value':
+                    try {
+                       $property->setRawAttributes($attributes);
+                    } catch (Exception $e) {
+                        break;                        
+                    }
+                    $this->fail('An Exception should have been thrown!');
+                    break;
+                default :
+                    $this->markTestIncomplete("The handling for this exepted value ($expected) is not implemented");
+            }            
         }
         // OK, if we got so far, we mark the test as complete.
         $this->assertTrue(true);
     }
 
 
-
-
+    /**
+     * If a new Property is created, the key shoud be set automaticly.
+     */
     public function testKeySetAfterCreate() {
         // If a property of the baseclass is created, the key remains null
         $property = vcard\VCardProperty::create();
@@ -170,4 +194,31 @@ class VCardPropertyTest extends SapphireTest {
         $this->assertEquals('org', $property->Key);
     }
     
+    
+    public function testConstructorWithArguments() {
+        $property = new vcard\VCardProperty('N');
+        $this->assertEquals('n', $property->Key);
+        
+        $property = new vcard\VCardProperty('N', 'Max Muster');
+        $this->assertEquals('n', $property->Key);
+        $this->assertEquals('Max Muster', $property->Value);
+    }
+    
+    public function testSetWrongKey() {        
+        // We can't change the key on a existing, specific class:
+        $property = vcard\TelProperty::create();
+        $exception = false;
+        try {
+            $property->Key = 'WrongValue';
+        } catch (Exception $exc) {
+            $exception = true;
+        }
+        $this->assertTrue($exception, 'No exception thrown if the key is altered!');
+        
+        
+        // If we change the key on a vCardProperty object, the specific class is returned:
+        $property = vcard\VCardProperty::create();
+        $property = $property->setKey('TEL');
+        $this->assertEquals('jrast\\vcard\\TelProperty', $property->class);
+    }
 }

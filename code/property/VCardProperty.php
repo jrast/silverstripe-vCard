@@ -21,8 +21,6 @@ class VCardProperty extends ViewableData {
     
     static protected $allowed_attribute_values = array(
         'encoding'  => array('base64', 'quoted-printable', '8bit'),
-        'charset'   => array('any'),
-        'language'  => array('any'),
         'value'     => array('inline', 'cid', 'content-id', 'url', 'uri')
     );
 
@@ -53,7 +51,7 @@ class VCardProperty extends ViewableData {
     
     function __construct($key = null, $value = null, $attributes = null) {
         if ($key) {
-            $this->key = $key;
+            $this->key = strtolower($key);
         } else {
             $class = get_called_class();
             $this->key = self::get_key_from_classname($class);
@@ -88,6 +86,10 @@ class VCardProperty extends ViewableData {
         return $this;
     }
     
+    /**
+     * Returns the Raw Data for this property
+     * @return string
+     */
     public function getRawData() {
         return $this->rawData;
     }
@@ -109,7 +111,7 @@ class VCardProperty extends ViewableData {
             $result = preg_match_all($regex_attributes, $attributes, $parts);
             if(!$result) {
                 $this->attributes = $attrib;
-                return;
+                return $this;
             }
             $keys = $parts['key'];
             $values = $parts['value'];
@@ -133,7 +135,7 @@ class VCardProperty extends ViewableData {
                     } else {
                         // For this key, no array with allowed values exist. we just save the key and asume any value is allowed
                         $attrib[$key][] = $value;
-                        throw new Exception("$this->class: '$value' not allowed for attribute '$key'! Allowed values are: $allowedValues");
+                        //throw new Exception("$this->class: '$value' not allowed for attribute '$key'! Allowed values are: $allowedValues");
                     }
                 } else {
                     $keyIsAllowed = false;
