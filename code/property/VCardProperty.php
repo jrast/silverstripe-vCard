@@ -205,6 +205,10 @@ class VCardProperty extends ViewableData {
     public function getValue() {
         return $this->value;
     }
+    
+    public function setRawValue($value) {
+        return $this->value = $value;
+    }
 
     public function setAttributes($attributes) {
         $this->attributes = $attributes;
@@ -214,8 +218,26 @@ class VCardProperty extends ViewableData {
     public function getAttributes() {
         return $this->attributes;
     }
-
-
+    
+    
+    /**
+     * Returns all attribute values of this property in a single array,
+     * the keys are droped. This is makes it easy to check if a property contains
+     * a specific value in the attributes.
+     * 
+     * @return array
+     */
+    public function getFlatAttributes() {
+        $attrib = array();
+        foreach($this->attributes as $a) {
+            $attrib = $attrib + $a;
+        }
+        return $attrib;
+    }
+    
+    public function forTemplate() {
+        return $this->value;
+    }
 
 
     /**
@@ -256,6 +278,7 @@ class VCardProperty extends ViewableData {
     protected static function get_classname_from_key($key) {
         return __NAMESPACE__ . '\\' . ucfirst(strtolower($key)) . 'Property';
     }
+    
     
     /**
      * 
