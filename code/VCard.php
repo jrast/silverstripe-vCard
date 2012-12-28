@@ -60,6 +60,17 @@ class VCard extends ViewableData {
         }
     }
     
+    /**
+     * Returns a single Property of the current VCard
+     * 
+     * Example:
+     * $vcard->Property('N'); // Get the N Property
+     * $vcard->Property('TEL', 'WORK'); // Get the first TEL Property with the attribute WORK set
+     * $vcard->Property('A:TEL', 'HOME'); // Get the first TEL Property in the group A with the attribute HOME set.
+     * 
+     * @return VCardProperty
+     * @throws \Exception
+     */
     public function Property(){
         if(func_num_args() == 0) {
             throw new \Exception('You must provide at leas one argument! (The key)');
@@ -73,19 +84,25 @@ class VCard extends ViewableData {
         if(count($GroupKey) == 1) {
             $key = $GroupKey[0];
             $group = null;
-            array_shift($arguments);
+            
         } else {
             $key = $GroupKey[1];
             $group = $GroupKey[0];
-            array_shift($arguments);
-            array_shift($arguments);
+        }
+        
+        array_shift($arguments);
+        $attributes = array();
+        if(count($arguments) > 0) {
+            foreach ($arguments as $arg) {
+                $attributes[] = strtolower($arg);
+            }
         }
         
         $properties = $this->filterKey($this->data, $key);
         if($group)
             $properties = $this->filterGroup($properties, $group);
-        if(count($arguments) > 0)
-            $properties = $this->filterAttributes($properties, $arguments);
+        if(count($attributes) > 0)
+            $properties = $this->filterAttributes($properties, $attributes);
         return reset($properties);
     }
     
@@ -102,13 +119,19 @@ class VCard extends ViewableData {
     private function filterGroup($data, $group) {
         $properties = array();
         foreach($data as $prop) {
-            if($prop->Group == strtolower($group)) {
+            if($prop->Group == $group) {
                 $properties[] = $prop;
             }
         }
         return $properties;
     }
     
+    /**
+     * 
+     * @param array $data
+     * @param array $attributes
+     * @return array
+     */
     private function filterAttributes($data, $attributes) {
         $properties = array();
         foreach($data as $prop) {
